@@ -6,6 +6,18 @@ package com.example.application.shared.enums;
  **/
 public enum ETaskState {
 
-    RUN,
-    WAIT
+    RUN("Běží"),
+    WAIT("Zařazena do fronty"),
+    FINISH("Skončila")
+    ;
+
+    private String czText;
+
+    ETaskState(String czText) {
+        this.czText = czText;
+    }
+
+    public String getCzText() {
+        return czText;
+    }
 }
