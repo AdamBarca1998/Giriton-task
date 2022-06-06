@@ -21,6 +21,7 @@ public class MainView extends VerticalLayout {
     private static final byte MAX_THREADS = 5;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(MAX_THREADS);
+//    private final Grid<TaskItem> grid = new Grid<>(TaskItem.class);
 
     public MainView() {
         Button ipButton = getIpButton();
@@ -39,7 +40,7 @@ public class MainView extends VerticalLayout {
 
         ipButton.addClickListener(_e -> {
             int orderThread = orderIndex.getAndIncrement();
-            openBeginNotification(orderThread);
+            openBeginNotification(orderThread + 1);
 
             executor.submit(() -> {
                 try {
@@ -50,7 +51,7 @@ public class MainView extends VerticalLayout {
                     IpDTO ip = restTemplate.getForObject("http://ip.jsontest.com/", IpDTO.class);
                     System.out.printf("%d: %s\n", orderThread, ip);
 
-                    ui.access(() -> getFinishNotification(orderThread).open());
+                    ui.access(() -> getFinishNotification(orderThread + 1).open());
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -60,28 +61,28 @@ public class MainView extends VerticalLayout {
         return ipButton;
     }
 
-    private void openBeginNotification(int orderThread) {
+    private void openBeginNotification(int taskNumber) {
         Notification notification;
         if (executor.getActiveCount() == MAX_THREADS) {
             // thread add to front
-            notification = getWaitNotification(orderThread);
+            notification = getWaitNotification(taskNumber);
         }  else {
             // thread run
-            notification = getRunNotification(orderThread);
+            notification = getRunNotification(taskNumber);
         }
         notification.open();
     }
 
-    private Notification getRunNotification(int orderThread) {
-        return getNotification("Task " + orderThread + ": run", NotificationVariant.LUMO_PRIMARY);
+    private Notification getRunNotification(int taskNumber) {
+        return getNotification("Úloha " + taskNumber + ": Běží", NotificationVariant.LUMO_PRIMARY);
     }
 
-    private Notification getWaitNotification(int orderThread) {
-        return getNotification("Task " + orderThread + ": wait", NotificationVariant.LUMO_CONTRAST);
+    private Notification getWaitNotification(int taskNumber) {
+        return getNotification("Úloha " + taskNumber + ": Zařazena do fronty", NotificationVariant.LUMO_CONTRAST);
     }
 
-    private Notification getFinishNotification(int orderThread) {
-        return getNotification("Task " + orderThread + ": finish", NotificationVariant.LUMO_SUCCESS);
+    private Notification getFinishNotification(int taskNumber) {
+        return getNotification("Úloha " + taskNumber + ": Skončila", NotificationVariant.LUMO_SUCCESS);
     }
 
     private Notification getNotification(String notificationText, NotificationVariant variant) {
