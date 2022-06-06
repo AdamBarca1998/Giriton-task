@@ -1,4 +1,4 @@
-package com.example.application.views.main;
+package com.example.application.views;
 
 import com.example.application.model.dto.IpDTO;
 import com.example.application.shared.enums.ETaskState;
@@ -51,14 +51,15 @@ public class MainView extends VerticalLayout {
 
             executor.submit(() -> {
                 try {
+                    if (taskNumber % 5 == 0) {
+                        throw new IllegalArgumentException("Task is modulo 5");
+                    }
+
                     // update task state
                     tasks.stream()
                             .filter(taskItem -> taskItem.getTaskNumber() == taskNumber)
                             .findFirst()
-                            .ifPresent(taskItem -> {
-                                System.out.println(taskItem);
-                                taskItem.setTaskState(ETaskState.RUN);
-                            });
+                            .ifPresent(taskItem -> taskItem.setTaskState(ETaskState.RUN));
                     updateGrid();
 
                     long sleepTime = (long) (Math.random() * (10 - 5) + 5);
@@ -68,14 +69,14 @@ public class MainView extends VerticalLayout {
                     IpDTO ip = restTemplate.getForObject("http://ip.jsontest.com/", IpDTO.class);
                     System.out.printf("%d: %s\n", taskNumber, ip);
 
-                    tasks.removeIf(taskItem -> taskItem.getTaskNumber() == taskNumber);
-
-                    ui.access(() -> {
-                        getFinishNotification(taskNumber).open();
-                    });
-                    updateGrid();
+                    // finish task
+                    ui.access(() -> getFinishNotification(taskNumber).open());
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
+                } catch (IllegalArgumentException e) {
+                    ui.access(() -> getErrorNotification(taskNumber).open());
+                } finally {
+                    removeItemFromGrid(taskNumber);
                 }
             });
         });
@@ -86,6 +87,11 @@ public class MainView extends VerticalLayout {
     private void configureGrid() {
         grid.addColumn(TaskItem::getTaskNumber).setHeader("Task number");
         grid.addColumn(taskItem -> taskItem.getTaskState().getCzText()).setHeader("State");
+    }
+
+    private void removeItemFromGrid(long taskNumber) {
+        tasks.removeIf(taskItem -> taskItem.getTaskNumber() == taskNumber);
+        updateGrid();
     }
 
     private void openBeginNotification(int taskNumber) {
@@ -117,6 +123,10 @@ public class MainView extends VerticalLayout {
 
     private Notification getFinishNotification(int taskNumber) {
         return getNotification("Úloha " + taskNumber + ": " + ETaskState.FINISH.getCzText(), NotificationVariant.LUMO_SUCCESS);
+    }
+
+    private Notification getErrorNotification(int taskNumber) {
+        return getNotification("Úloha " + taskNumber + ": " + ETaskState.ERROR.getCzText(), NotificationVariant.LUMO_ERROR);
     }
 
     private Notification getNotification(String notificationText, NotificationVariant variant) {

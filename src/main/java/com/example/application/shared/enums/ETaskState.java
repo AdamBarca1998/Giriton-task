@@ -8,7 +8,8 @@ public enum ETaskState {
 
     RUN("Běží"),
     WAIT("Zařazena do fronty"),
-    FINISH("Skončila")
+    FINISH("Skončila"),
+    ERROR("Selhala")
     ;
 
     private String czText;
