@@ -131,6 +131,13 @@
             <version>1.18.24</version>
             <scope>provided</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.vaadin/vaadin-push -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-push</artifactId>
+            <version>8.15.2</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
